@@ -76,9 +76,9 @@ def oracle(ciphertext):
     global queries
 
     queries += 1
-    t = time.perf_counter()
-    if queries % 500 == 0:
-        print("Query #{} ({} s)".format(queries, round(t - t_start, 3)))
+    # t = time.perf_counter()
+    # if queries % 500 == 0:
+    #     print("Query #{} ({} s)".format(queries, round(t - t_start, 3)))
 
     encoded = rsa.decrypt_string(sk, ciphertext)
 
@@ -229,18 +229,28 @@ def bleichenbacher(ciphertext):
 
 
 def main():
-    message = b'1337h4x0rz!'
+    global queries
+    total = []
 
-    ciphertext = prepare(message)
-    decrypted = bleichenbacher(ciphertext)
-    decrypted = PKCS1_decode(decrypted)
+    #message = b'1337h4x0rz!'
 
-    print("----------")
-    print("Queries =", queries)
-    print("message:\t", message)
-    print("decrypt:\t", decrypted)
+    for i in range(100):
+        message = bytes(os.urandom(11))
 
-    print(message == decrypted)
+        ciphertext = prepare(message)
+        decrypted = bleichenbacher(ciphertext)
+        decrypted = PKCS1_decode(decrypted)
+
+        assert decrypted == message
+
+        total.append(queries)
+        print(i)
+
+        queries = 0
+    
+    print(total)
+
+
 
 
 def run_tests(m):
