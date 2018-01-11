@@ -50,6 +50,7 @@ def PKCS1_encode(message, total_bytes):
 
     return encoded
 
+
 def PKCS1_decode(encoded):
     """
     Decodes a PKCS1 v1.5 string. 
@@ -64,8 +65,7 @@ def PKCS1_decode(encoded):
 
     return message
 
-# oracle has access to the secret key
-# lets the attacker to test if the 16 MSB of plaintext = '02'
+
 def oracle(ciphertext):
     """
     Placeholder for some server which talks RSA PKCS1 v1.5
@@ -76,9 +76,9 @@ def oracle(ciphertext):
     global queries
 
     queries += 1
-    # t = time.perf_counter()
-    # if queries % 500 == 0:
-    #     print("Query #{} ({} s)".format(queries, round(t - t_start, 3)))
+    t = time.perf_counter()
+    if queries % 500 == 0:
+        print("Query #{} ({} s)".format(queries, round(t - t_start, 3)))
 
     encoded = rsa.decrypt_string(sk, ciphertext)
 
@@ -91,6 +91,7 @@ def oracle(ciphertext):
     
     return encoded[0:2] == b'\x00\x02'
 
+
 def prepare(message):
     """
     Suppose we intercept a padded ciphertext.
@@ -102,6 +103,7 @@ def prepare(message):
     ciphertext = rsa.encrypt_string(pk, message_encoded)
 
     return ciphertext
+
 
 # Step 2.A.
 def find_smallest_s(lower_bound, c):
@@ -119,6 +121,7 @@ def find_smallest_s(lower_bound, c):
             return s
 
         s += 1
+
 
 # Step 2.C.
 def find_s_in_range(a, b, prev_s, B, c):
@@ -163,6 +166,7 @@ def safe_interval_insert(M_new, interval):
     M_new.append(interval)
 
     return M_new
+
 
 # Step 3.
 def update_intervals(M, s, B):
@@ -227,32 +231,43 @@ def bleichenbacher(ciphertext):
         M = update_intervals(M, s, B)
 
 
-
 def main():
     global queries
-    total = []
+    
+    simulations = False
 
-    #message = b'1337h4x0rz!'
+    if simulations:
+        total = []
 
-    for i in range(100):
-        message = bytes(os.urandom(11))
+        for i in range(100):
+            message = bytes(os.urandom(11))
 
+            ciphertext = prepare(message)
+            decrypted = bleichenbacher(ciphertext)
+            decrypted = PKCS1_decode(decrypted)
+
+            assert decrypted == message
+
+            total.append(queries)
+            print(i)
+
+            queries = 0
+
+        print(total)
+    else:
+        message = b'1337h4x0rz'
         ciphertext = prepare(message)
         decrypted = bleichenbacher(ciphertext)
         decrypted = PKCS1_decode(decrypted)
 
         assert decrypted == message
 
-        total.append(queries)
-        print(i)
+        print("----------")
+        print("queries:\t{}".format(queries))
+        print("message:\t{}".format(message))
+        print("decrypt:\t{}".format(decrypted))
 
-        queries = 0
-    
-    print(total)
-
-
-
-
+        
 def run_tests(m):
     """
     Small sanity test suite
