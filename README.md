@@ -1,5 +1,5 @@
-# crypto-project
-Bleichenbacher's PKCS 1.5 Padding Oracle attack implementation for the Introduction to Cryptology class
+# Bleichenbacher's PKCS 1.5 Padding Oracle Attack
+Bleichenbacher's PKCS 1.5 Padding Oracle Attack implementation for the Introduction to Cryptology class
 
 For this project, I have implemented Daniel Bleichenbacher’s Adaptive Chosen Ciphertext Attack on RSA PKCS #1 v1.5 [1]. It is a particularly interesting attack due to real life implications (PKCS #1 was widely deployed, for example, in HTTPS – SSL/TLS) and due to the mathematics behind it.
 
