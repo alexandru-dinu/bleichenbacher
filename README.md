@@ -1,9 +1,7 @@
 # Bleichenbacher's PKCS 1.5 Padding Oracle Attack
 
-Daniel Bleichenbacher’s Adaptive Chosen Ciphertext Attack on RSA PKCS #1 v1.5 [1] implementation for the Introduction to Cryptology class
+An implementation of Daniel Bleichenbacher’s Adaptive Chosen Ciphertext Attack on RSA PKCS #1 v1.5 [1].
 
-It is a particularly interesting attack due to real life implications (PKCS #1 was widely deployed, for example, in HTTPS – SSL/TLS) and due to the mathematics behind it.
-
-This specific attack exploits the implementation flaws found in numerous servers, that is, they report whether the encoding of the message they have received is PKCS1-conforming. This allows the attacker to use the server as an oracle to which he sends several queries. Based upon the server’s reply, the attacker can gain information about the complete decryption of an intercepted ciphertext (hence the *adaptive chosen ciphertext* bit).
+The attack is particularly interesting due to its real life implications: PKCS #1 was widely deployed, e.g. in HTTPS – SSL/TLS). It exploits an implementation flaw present in numerous servers: reporting whether the encoding of the received message is PKCS1-conforming. This allows one to use the server as an oracle, and based on the reply, one can gain information about the complete decryption of the intercepted ciphertext (hence the *adaptive chosen ciphertext* part).
 
 [1] [Chosen Ciphertext Attacks Against Protocols Based on the RSA Encryption Standard PKCS #1](http://archiv.infsec.ethz.ch/education/fs08/secsem/bleichenbacher98.pdf)
