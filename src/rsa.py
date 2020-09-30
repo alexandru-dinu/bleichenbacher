@@ -27,18 +27,21 @@ def generate_key(modulus_length):
 
     return public_key, secret_key
 
+
 def encrypt_integer(public_key, m):
     (n, e) = public_key
 
     if m > n:
-        raise Exception("Message is to big for current RSA scheme!")
+        raise ValueError("Message is to big for current RSA scheme!")
 
     return pow(m, e, n)
+
 
 def decrypt_integer(secret_key, c):
     (n, d) = secret_key
 
     return pow(c, d, n)
+
 
 def encrypt_string(public_key, message):
     integer = utils.bytes_to_integer(message)
@@ -46,6 +49,7 @@ def encrypt_string(public_key, message):
     enc_string = utils.integer_to_bytes(enc_integer)
 
     return enc_string
+
 
 def decrypt_string(secret_key, ciphertext):
     enc_integer = utils.bytes_to_integer(ciphertext)

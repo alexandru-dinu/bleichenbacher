@@ -1,11 +1,10 @@
+import os
+import random
+import time
+from collections import namedtuple
+
 import rsa
 import utils
-
-import random
-import os
-import time
-
-from collections import namedtuple
 
 Interval = namedtuple('Interval', ['lower_bound', 'upper_bound'])
 
@@ -25,9 +24,14 @@ t_start = time.perf_counter()
 global queries
 queries = 0
 
+
 # math.ceil and math.floor don't work for large integers
-ceil = lambda a, b: a // b + (a % b > 0)
-floor = lambda a, b: a // b
+def floor(a, b):
+    return a // b
+
+
+def ceil(a, b):
+    return a // b + (a % b > 0)
 
 
 def PKCS1_encode(message, total_bytes):
@@ -40,7 +44,7 @@ def PKCS1_encode(message, total_bytes):
     # 11 = 3 constant bytes and at aleast 8 bytes for padding
     if len(message) > total_bytes - 11:
         raise Exception("Message to big for encoding scheme!")
-    
+
     pad_len = total_bytes - 3 - len(message)
 
     # non-zero padding bytes
@@ -53,7 +57,7 @@ def PKCS1_encode(message, total_bytes):
 
 def PKCS1_decode(encoded):
     """
-    Decodes a PKCS1 v1.5 string. 
+    Decodes a PKCS1 v1.5 string.
     Remove constant bytes and random pad until arriving at "\x00".
     The rest is the message.
     """
@@ -84,11 +88,11 @@ def oracle(ciphertext):
 
     if len(encoded) > k:
         raise Exception("Invalid PKCS1 encoding after decryption!")
-    
+
     if len(encoded) < k:
         zero_pad = b'\x00' * (k - len(encoded))
         encoded = zero_pad + encoded
-    
+
     return encoded[0:2] == b'\x00\x02'
 
 
@@ -97,11 +101,8 @@ def prepare(message):
     Suppose we intercept a padded ciphertext.
     Our goal is to completely decrypt it, just by using the oracle.
     """
-    
     message_encoded = PKCS1_encode(message, k)
-    
     ciphertext = rsa.encrypt_string(pk, message_encoded)
-
     return ciphertext
 
 
@@ -143,7 +144,7 @@ def find_s_in_range(a, b, prev_s, B, c):
 
             if oracle(attempt):
                 return si
-        
+
         ri += 1
 
 
@@ -153,7 +154,7 @@ def safe_interval_insert(M_new, interval):
     """
 
     for i, (a, b) in enumerate(M_new):
-        
+
         # overlap found, construct the larger interval
         if (b >= interval.lower_bound) and (a <= interval.upper_bound):
             lb = min(a, interval.lower_bound)
@@ -161,7 +162,7 @@ def safe_interval_insert(M_new, interval):
 
             M_new[i] = Interval(lb, ub)
             return M_new
-    
+
     # no overlaps found, just insert the new interval
     M_new.append(interval)
 
@@ -177,11 +178,11 @@ def update_intervals(M, s, B):
     M_new = []
 
     for a, b in M:
-        r_lower = ceil(a * s - 3 * B + 1,  n)
-        r_upper = ceil(b * s - 2 * B,  n)
+        r_lower = ceil(a * s - 3 * B + 1, n)
+        r_upper = ceil(b * s - 2 * B, n)
 
         for r in range(r_lower, r_upper):
-            lower_bound = max(a, ceil(2 * B + r * n,  s))
+            lower_bound = max(a, ceil(2 * B + r * n, s))
             upper_bound = min(b, floor(3 * B - 1 + r * n, s))
 
             interval = Interval(lower_bound, upper_bound)
@@ -225,15 +226,15 @@ def bleichenbacher(ciphertext):
             # Step 4.
             if a == b:
                 return utils.integer_to_bytes(a % n)
-            
+
             s = find_s_in_range(a, b, s, B, c)
-            
+
         M = update_intervals(M, s, B)
 
 
 def main():
     global queries
-    
+
     simulations = False
 
     if simulations:
@@ -267,15 +268,15 @@ def main():
         print("message:\t{}".format(message))
         print("decrypt:\t{}".format(decrypted))
 
-        
+
 def run_tests(m):
     """
     Small sanity test suite
     """
     menc = PKCS1_encode(m, k)
-    
+
     print("1. (un)pad:", PKCS1_decode(menc) == m)
-    
+
     m1 = rsa.decrypt_string(sk, rsa.encrypt_string(pk, m))
     print("2. rsa w/o pad:", m == m1)
 
@@ -289,7 +290,5 @@ def run_tests(m):
     print("5. oracle not well-formed", m4)
 
 
-
 if __name__ == '__main__':
     main()
-   
